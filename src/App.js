@@ -7,7 +7,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(process.env.REACT_APP_API_URL + '/languages')
+    fetch(process.env.REACT_APP_GET_ALL_VOTES_URL + '/languages')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -27,7 +27,7 @@ const App = () => {
   }, []);
 
   const handleVote = language => {
-    fetch(process.env.REACT_APP_API_URL + `/languages/${language}/vote`, {
+    fetch(process.env.REACT_APP_VOTE_COUNT_UPDATE_URL + `/languages/${language}/vote`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ const App = () => {
     })
       .then(response => response.json())
       .then(() => {
-        fetch(process.env.REACT_APP_API_URL + '/languages')
+        fetch(process.env.REACT_APP_GET_LANGUAGE_INFO_URL + '/languages')
           .then(response => response.json())
           .then(data => {
             const parsedData = data.body ? JSON.parse(data.body) : data;
