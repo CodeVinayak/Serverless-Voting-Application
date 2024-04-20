@@ -1,13 +1,15 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
 import LanguageCard from './components/LanguageCard';
+import { GET_LANGUAGE_INFO_URL, VOTE_COUNT_UPDATE_URL } from './constants';
 
 const App = () => {
+
   const [languages, setLanguages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(process.env.REACT_APP_GET_ALL_VOTES_URL + '/languages')
+    fetch(GET_LANGUAGE_INFO_URL)
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -26,34 +28,44 @@ const App = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleVote = language => {
-    fetch(process.env.REACT_APP_VOTE_COUNT_UPDATE_URL + `/languages/${language}/vote`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        operation: 'update',
-        payload: { language },
-      }),
-    })
-      .then(response => response.json())
-      .then(() => {
-        fetch(process.env.REACT_APP_GET_LANGUAGE_INFO_URL + '/languages')
-          .then(response => response.json())
-          .then(data => {
-            const parsedData = data.body ? JSON.parse(data.body) : data;
-            if (Array.isArray(parsedData)) {
-              setLanguages(parsedData);
-            } else {
-              console.error('Invalid data format received:', parsedData);
-            }
-          })
-          .catch(error => console.error('Error fetching data:', error));
-      })
-      .catch(error => console.error('Error updating vote:', error));
-  };  
 
+  const handleVote = async (language) => {
+    try {
+      // Update vote count
+      const updateResponse = await fetch(VOTE_COUNT_UPDATE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          payload: language,
+        }),
+      });
+  
+      if (!updateResponse.ok) {
+        throw new Error(`Failed to update vote count. Status: ${updateResponse.status}`);
+      }
+  
+      // Fetch updated language info
+      const languageInfoResponse = await fetch(GET_LANGUAGE_INFO_URL);
+      if (!languageInfoResponse.ok) {
+        throw new Error(`Failed to fetch language info. Status: ${languageInfoResponse.status}`);
+      }
+  
+      const languageInfoData = await languageInfoResponse.json();
+      console.log(languageInfoData)
+      const parsedData = languageInfoData.body ? JSON.parse(languageInfoData.body) : languageInfoData;
+  
+      if (Array.isArray(parsedData)) {
+        setLanguages(parsedData);  // Assuming setLanguages is a state setter function
+      } else {
+        console.error('Invalid data format received:', parsedData);
+      }
+    } catch (error) {
+      console.error('Error handling vote:', error);
+    }
+  };
+  
   return (
     <div className="container mx-auto">
       <div class="flex justify-center items-center h-full mt-8">
@@ -71,7 +83,7 @@ const App = () => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
         {languages.map(language => (
-          <LanguageCard key={language.Language} language={language} handleVote={handleVote} />
+          <LanguageCard key={language.language} language={language} handleVote={handleVote} />
         ))}
       </div>
     </div>
