@@ -32,4 +32,4 @@ The Serverless Voting Application is a cloud-native application that leverages s
 3. Configure AWS credentials and required services
 4. Deploy the application using AWS
 
-### Created by Vinayak Kumar Singh -  ❤️
+### Created by Vinayak Kumar Singh  ❤️
